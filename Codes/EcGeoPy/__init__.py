@@ -5,3 +5,5 @@
 from .RCA import rca, isRCA
 from .PRODY import prody, expy
 from .INEQUALITY import gini, robin_hood, herfindahl
+from .COMPLEXITY import relatedness
+from .DENSITIES import rel_density, compl_rel_density
