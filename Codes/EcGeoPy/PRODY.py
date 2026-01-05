@@ -15,8 +15,8 @@ def prody(mat: np.ndarray,
     Parameters
     -----
     mat: numpy 2-d array, either of the two:
-          * export data
-          - RCA values (default)
+          * Export data (default)
+          - RCA values
         Row: Product/Task/ etc.
         Col: Region
     
