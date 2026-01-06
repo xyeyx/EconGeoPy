@@ -208,3 +208,253 @@ def relatedness(mat:np.ndarray,
     
     return Result;
 
+
+
+def rescale(x:np.ndarray) ->np.ndarray:
+    eth = x.min()
+    btc = x.max()
+    if eth == btc:
+        return x*0;
+    else:
+        return 100*(x-eth)/(btc-eth);
+
+
+
+def pci_reflex(mat_RCA:np.ndarray, steps:int) -> np.ndarray:
+    '''
+    Compute complexity index of nodes using the reflection method.
+    
+    Parameters
+    -----
+    mat_RCA: numpy 2-d array.
+        Row: Product/Task/ etc.
+        Col: Region
+    
+    steps: integer. How many steps of reflection to be taken. 
+        Max = 25.    
+    '''
+    if mat_RCA.ndim != 2:
+        raise ValueError("'mat_RCA' must be a 2-d array, but currently its dimension is {}.".format(mat_RCA.ndim));
+    if steps < 0:
+        raise ValueError("'steps' must be an non-negative integer.");
+    if steps > 25:
+        print("[WARNING] Maximum 'steps' capped at 25.\n");
+        steps = 25;
+    
+    hasRCA = (mat_RCA>=1.0).astype(int);
+    if hasRCA.sum()==0:
+        raise ValueError("Ensure that there must be some industry/region having RCA larger than 1 in the 'mat_RCA'.");
+    
+    diversity = hasRCA.sum(0, keepdims = True);
+    ubiquity = hasRCA.sum(1, keepdims = True);
+    
+    if steps == 0:
+        return rescale(ubiquity[:,0]);
+    
+    d0 = diversity;
+    u0 = ubiquity;
+    d1 = d0;
+    u1 = u0;
+    while steps > 0:
+        steps -= 1;
+        dd = (hasRCA*u1).sum(0, keepdims=True) / d0;
+        dd[np.isnan(dd)]=0;
+        uu = (hasRCA*d1).sum(1, keepdims=True) / u0;
+        uu[np.isnan(uu)]=0;
+        d1 = dd;
+        u1 = uu;
+    
+    return rescale(u1[:,0]);
+
+
+def eci_reflex(mat_RCA:np.ndarray, steps:int) -> np.ndarray:
+    '''
+    Compute economic complexity index of regions using the reflection method.
+    
+    Parameters
+    -----
+    mat_RCA: numpy 2-d array.
+        Row: Product/Task/ etc.
+        Col: Region
+    
+    steps: integer. How many steps of reflection to be taken. 
+        Max = 25.    
+    '''
+    if mat_RCA.ndim != 2:
+        raise ValueError("'mat_RCA' must be a 2-d array, but currently its dimension is {}.".format(mat_RCA.ndim));
+    if steps < 0:
+        raise ValueError("'steps' must be an non-negative integer.");
+    if steps > 25:
+        print("[WARNING] Maximum 'steps' capped at 25.\n");
+        steps = 25;
+    
+    return pci_reflex(mat_RCA.T, steps);
+
+
+
+def pci_eig(mat_RCA: np.ndarray) -> np.ndarray:
+    '''
+    Compute complexity index of nodes using the eigenfactor method.
+    Input: numpy 2-d array.
+        Row: Product/Task/ etc.
+        Col: Region
+    
+    '''
+    hasRCA = (mat_RCA>=1.0).astype(int);
+    if hasRCA.sum()==0:
+        raise ValueError("Ensure that there must be some industry/region having RCA larger than 1 in the 'mat_RCA'.");
+    
+    diversity = hasRCA.sum(0, keepdims = True);
+    ubiquity = hasRCA.sum(1, keepdims = True);
+    
+    diversity[diversity<=0] = 9988;
+    ubiquity[ubiquity<=0] = 9992;
+    
+    doge = hasRCA/ubiquity;
+    coin = hasRCA/diversity;
+    dogecoin = np.matmul(doge, coin.T);
+    
+    eigenvalues, eigenvectors = np.linalg.eig(dogecoin);
+    
+    # Ensure sequence and get the second largest
+    idx = np.argsort(eigenvalues)[::-1];
+    PCI = rescale(eigenvectors[:,idx[1]]);
+    
+    # Flipping signs to be consistent to the reflection outcome
+    PCIe = pci_reflex(mat_RCA, 25);
+    if np.corrcoef(PCI, PCIe)[0,1] < 0.0:
+        PCI = -PCI;
+    
+    return rescale(PCI);
+
+
+
+def eci_eig(mat_RCA: np.ndarray) -> np.ndarray:
+    '''
+    Compute complexity index of regions using the eigenfactor method.
+    Input: numpy 2-d array.
+        Row: Product/Task/ etc.
+        Col: Region
+    
+    '''
+    return pci_eig(mat_RCA.T);
+
+
+
+
+def pci(mat: np.ndarray,
+        input_type: str = 'Export',
+        method: str = 'Eigenvector',
+        steps: int | None = None ) -> np.ndarray:
+    '''
+    Compute the "product" complexity index of each node (e.g. product, task etc). 
+    
+    Parameters
+    -----
+    mat: numpy 2-d array. Either export of each region, or RCAs.
+        Row: Product/Task/ etc.
+        Col: Region
+    
+    input_type: String variable indicating input type, must be one of the two
+                * "Export" => regional export data (Default)
+                - "RCA" => Value of RCAs
+                All other values will trigger an error.
+    
+    method: String variable indicating method of computation of complexity,
+            must be either one of the two:
+            * "Eigenvector" (default)
+            - "Reflection"
+            All other values will trigger an error. When the "Reflection" 
+            method is used, one must also supply the number of steps in
+            the reflection. 
+    steps: Integer. Only useful when 'method' is "Eigenvector". 
+           Maximum allowed steps set to 25. Otherwise you'll get a warning and
+           the algorithm stops at step 25...
+    '''
+    if mat.ndim != 2:
+        raise ValueError("'mat' must be a 2-d array, but currently its dimension is {}.".format(mat.ndim));
+    allowed_methods = ['Eigenvector', 'Reflection'];
+    allowed_types = ['Export', 'RCA'];
+    
+    if input_type not in allowed_types:
+        raise ValueError("'input_type' must be one of: {}.".format("', '".join(allowed_types)));
+    if method not in allowed_methods:
+        raise ValueError("'method' must be one of: {}.".format("', '".join(allowed_methods)));
+    if method == 'Reflection' and steps is None:
+        raise ValueError("'steps' must be supplied when using the 'Reflection' method.");
+    
+    if input_type == 'Export':
+        mat = rca(mat);
+    
+    
+    if method == 'Eigenvector':
+        if steps is not None:
+            print("[WARNING] 'steps' ignored when using the 'Eigenvector' method.\n");
+        PCI = pci_eig(mat);
+    elif method == 'Reflection':
+        PCI = pci_reflex(mat, steps);
+    else:
+        PCI = "When there is a will, perhaps there is still no way."
+    
+    return PCI;
+
+
+        
+
+def eci(mat: np.ndarray,
+        input_type: str = 'Export',
+        method: str = 'Eigenvector',
+        steps: int | None = None ) -> np.ndarray:
+    '''
+    Compute the economic complexity index of each region.
+    
+    Parameters
+    -----
+    mat: numpy 2-d array. Either export of each region, or RCAs.
+        Row: Product/Task/ etc.
+        Col: Region
+    
+    input_type: String variable indicating input type, must be one of the two
+                * "Export" => regional export data (Default)
+                - "RCA" => Value of RCAs
+                All other values will trigger an error.
+    
+    method: String variable indicating method of computation of complexity,
+            must be either one of the two:
+            * "Eigenvector" (default)
+            - "Reflection"
+            All other values will trigger an error. When the "Reflection" 
+            method is used, one must also supply the number of steps in
+            the reflection. 
+    steps: Integer. Only useful when 'method' is "Eigenvector". 
+           Maximum allowed steps set to 25. Otherwise you'll get a warning and
+           the algorithm stops at step 25...
+    '''
+    if mat.ndim != 2:
+        raise ValueError("'mat' must be a 2-d array, but currently its dimension is {}.".format(mat.ndim));
+    allowed_methods = ['Eigenvector', 'Reflection'];
+    allowed_types = ['Export', 'RCA'];
+    
+    if input_type not in allowed_types:
+        raise ValueError("'input_type' must be one of: {}.".format("', '".join(allowed_types)));
+    if method not in allowed_methods:
+        raise ValueError("'method' must be one of: {}.".format("', '".join(allowed_methods)));
+    if method == 'Reflection' and steps is None:
+        raise ValueError("'steps' must be supplied when using the 'Reflection' method.");
+    
+    if input_type == 'Export':
+        mat = rca(mat);
+    
+    
+    if method == 'Eigenvector':
+        if steps is not None:
+            print("[WARNING] 'steps' ignored when using the 'Eigenvector' method.\n");
+        ECI = eci_eig(mat);
+    elif method == 'Reflection':
+        ECI = eci_reflex(mat, steps);
+    else:
+        ECI = "When there is a will, perhaps there is still no way."
+    
+    return ECI;
+
+
