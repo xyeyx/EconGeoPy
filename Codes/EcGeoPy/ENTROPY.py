@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def entropy_simple(mat:np.ndarray, base:str = 'e'):
+def entropy_simple(mat:np.ndarray, base:str = 'e') -> float | np.ndarray:
     '''
     Compute entropy of the data provided.
     
@@ -15,10 +15,10 @@ def entropy_simple(mat:np.ndarray, base:str = 'e'):
     base: string. Indicating base in the ln operation for entropy.
           Must be either 'e' (default), '2' or '10'    
     '''
-    allowed_bases = ['e', '2', '10'];
+    allowed_bases = ['e', '2', '10', 2, 10];
     if base not in allowed_bases:
         raise ValueError("'base' must be either of the following: '{}'.".format(
-            "', '".join(allowed_bases)));
+            "', '".join(allowed_bases[:3])));
     
     if mat.ndim > 2:
         raise ValueError("'mat' must be a 2-d array, but currently its dimension is {}.".format(mat.ndim));
@@ -31,9 +31,9 @@ def entropy_simple(mat:np.ndarray, base:str = 'e'):
     pokemon[p==0] = 0.7974;
     if base == 'e':
         Entro = np.sum(p*np.log(pokemon), axis = 0, keepdims=False);
-    elif base == '10':
+    elif base == '10' or base == 10:
         Entro = np.sum(p*np.log10(pokemon), axis = 0, keepdims=False);
-    elif base == '2':
+    elif base == '2' or base == 2:
         Entro = np.sum(p*np.log2(pokemon), axis = 0, keepdims=False);
     else:
         Entro = 'Where is, repeat, where is Meowth? Musashi wonders.';
@@ -45,7 +45,7 @@ def entropy_simple(mat:np.ndarray, base:str = 'e'):
 
 def entropy_byClass(mat:np.ndarray,
                     class_size:np.ndarray,
-                    base:str = 'e'):
+                    base:str = 'e') -> float | np.ndarray:
     '''
     Compute weighted entropy.
     
@@ -61,10 +61,10 @@ def entropy_byClass(mat:np.ndarray,
     base: string. Indicating base in the ln operation for entropy.
           Must be either 'e' (default), '2' or '10'    
     '''    
-    allowed_bases = ['e', '2', '10'];
+    allowed_bases = ['e', '2', '10', 2, 10];
     if base not in allowed_bases:
         raise ValueError("'base' must be either of the following: '{}'.".format(
-            "', '".join(allowed_bases)));
+            "', '".join(allowed_bases[:3])));
     
     if mat.ndim > 2:
         raise ValueError("'mat' must be either 1-d or 2-d array, but currently its dimension is {}.".format(mat.ndim));
@@ -94,9 +94,9 @@ def entropy_byClass(mat:np.ndarray,
     
     if base == 'e':
         Entro = np.sum(p * class_size * np.log(pokemon), axis = 0, keepdims=False);
-    elif base == '10':
+    elif base == '10' or base == 10:
         Entro = np.sum(p * class_size * np.log10(pokemon), axis = 0, keepdims=False);
-    elif base == '2':
+    elif base == '2' or base == 2:
         Entro = np.sum(p * class_size * np.log2(pokemon), axis = 0, keepdims=False);
     else:
         Entro = 'Where is, repeat, where is Kojiroh? Meowth wonders.';
@@ -109,7 +109,7 @@ def entropy_byClass(mat:np.ndarray,
 
 def entropy(mat:np.ndarray,
             class_size:np.ndarray | None = None,
-            base:str = 'e'):
+            base:str = 'e') -> float | np.ndarray:
     '''
     Compute entropy.
     
@@ -129,10 +129,10 @@ def entropy(mat:np.ndarray,
     base: string. Indicating base in the ln operation for entropy.
           Must be either 'e' (default), '2' or '10'    
     '''
-    allowed_bases = ['e', '2', '10'];
+    allowed_bases = ['e', '2', '10', 2, 10];
     if base not in allowed_bases:
         raise ValueError("'base' must be either of the following: '{}'.".format(
-            "', '".join(allowed_bases)));
+            "', '".join(allowed_bases[:3])));
     
     if mat.ndim > 2:
         raise ValueError("'mat' must be either 1-d or 2-d array, but currently its dimension is {}.".format(mat.ndim));
@@ -156,7 +156,7 @@ def entropy(mat:np.ndarray,
 
 
 
-def kl(mat:np.ndarray, reference:np.ndarray, base:str = 'e'):
+def kl(mat:np.ndarray, reference:np.ndarray, base:str = 'e')  -> float | np.ndarray:
     '''
     Kullback–Leibler divergence
     
@@ -173,10 +173,10 @@ def kl(mat:np.ndarray, reference:np.ndarray, base:str = 'e'):
     base: string. Indicating base in the ln operation when calculating KL 
           divergence.Must be either 'e' (default), '2' or '10'    
     '''
-    allowed_bases = ['e', '2', '10'];
+    allowed_bases = ['e', '2', '10', 2, 10];
     if base not in allowed_bases:
         raise ValueError("'base' must be either of the following: '{}'.".format(
-            "', '".join(allowed_bases)));
+            "', '".join(allowed_bases[:3])));
     if mat.ndim > 2:
         raise ValueError("'mat' must be either 1-d or 2-d array, but currently its dimension is {}.".format(mat.ndim));
     if reference.ndim > 2:
@@ -209,9 +209,9 @@ def kl(mat:np.ndarray, reference:np.ndarray, base:str = 'e'):
     
     if base == 'e':
         Entro = np.sum(p*np.log(pokemon/luigi) * isIncl, axis = 0, keepdims=False);
-    elif base == '10':
+    elif base == '10' or base == 10:
         Entro = np.sum(p*np.log10(pokemon/luigi) * isIncl, axis = 0, keepdims=False);
-    elif base == '2':
+    elif base == '2' or base == 2:
         Entro = np.sum(p*np.log2(pokemon/luigi) * isIncl, axis = 0, keepdims=False);
     else:
         Entro = 'Where is, repeat, where is Meowth? Musashi wonders.';
@@ -219,4 +219,4 @@ def kl(mat:np.ndarray, reference:np.ndarray, base:str = 'e'):
     return Entro;
 
 
-
+    
