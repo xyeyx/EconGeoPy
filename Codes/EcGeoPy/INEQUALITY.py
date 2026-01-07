@@ -45,9 +45,12 @@ def rh_byClass(mat:np.ndarray, class_size:np.ndarray) -> float | np.ndarray:
     
     if class_size.ndim > 2:
         raise ValueError("'class_size' must be either 1-d or 2-d array, but currently its dimension is {}.".format(class_size.ndim));
-    
-    if mat.shape!=class_size.shape:
-        raise ValueError("'mat' and 'class_size' must have the same shape, but currently the shape of 'mat' is {a} and the shape of 'class_size' is {b}.".format(a=mat.shape, b=class_size.shape));
+    if class_size.ndim == 1 and mat.ndim == 2:
+        if len(class_size) != mat.shape[0]:
+            raise ValueError("If 'class_size' is an 1-d array, it must have the same number of elements as the number of rows of 'mat'");
+        class_size = class_size.reshape(-1, 1);
+    elif mat.shape!=class_size.shape:
+        raise ValueError("When 'class_size' and 'mat' have the same dimensions, they must have the same shape. But currently the shape of 'mat' is {a} and the shape of 'class_size' is {b}.".format(a=mat.shape, b=class_size.shape));
     
     
     fairplay = class_size / class_size.sum(axis = 0);
@@ -83,10 +86,13 @@ def robin_hood(mat:np.ndarray, class_size:np.ndarray | None = None) -> float | n
     else:
         if class_size.ndim > 2:
             raise ValueError("'class_size' must be either 1-d or 2-d array, but currently its dimension is {}.".format(class_size.ndim));
-        if mat.shape!=class_size.shape:
-            raise ValueError("'mat' and 'class_size' must have the same shape, but currently the shape of 'mat' is {a} and the shape of 'class_size' is {b}.".format(a=mat.shape, b=class_size.shape));
+        if class_size.ndim == 1 and mat.ndim == 2:
+            if len(class_size) != mat.shape[0]:
+                raise ValueError("If 'class_size' is an 1-d array, it must have the same number of elements as the number of rows of 'mat'");
+        
+        elif mat.shape!=class_size.shape:
+            raise ValueError("When 'class_size' and 'mat' have the same dimensions, they must have the same shape. But currently the shape of 'mat' is {a} and the shape of 'class_size' is {b}.".format(a=mat.shape, b=class_size.shape));
         return rh_byClass(mat, class_size);
-
 
 
 
@@ -147,9 +153,12 @@ def gini_byClass(mat:np.ndarray, class_size:np.ndarray) -> float | np.ndarray:
     
     if class_size.ndim > 2:
         raise ValueError("'class_size' must be either 1-d or 2-d array, but currently its dimension is {}.".format(class_size.ndim));
-    
-    if mat.shape!=class_size.shape:
-        raise ValueError("'mat' and 'class_size' must have the same shape, but currently the shape of 'mat' is {a} and the shape of 'class_size' is {b}.".format(a=mat.shape, b=class_size.shape));
+    if class_size.ndim == 1 and mat.ndim == 2:
+        if len(class_size) != mat.shape[0]:
+            raise ValueError("If 'class_size' is an 1-d array, it must have the same number of elements as the number of rows of 'mat'");
+        class_size = class_size.reshape(-1, 1);
+    elif mat.shape!=class_size.shape:
+        raise ValueError("When 'class_size' and 'mat' have the same dimensions, they must have the same shape. But currently the shape of 'mat' is {a} and the shape of 'class_size' is {b}.".format(a=mat.shape, b=class_size.shape));
     
     seq = mat.argsort(axis = 0);
     mat_asc = np.take_along_axis(mat, seq, axis = 0);
@@ -191,7 +200,11 @@ def gini(mat:np.ndarray, class_size:np.ndarray | None = None) -> float | np.ndar
     else:
         if class_size.ndim > 2:
             raise ValueError("'class_size' must be either 1-d or 2-d array, but currently its dimension is {}.".format(class_size.ndim));
-        if mat.shape!=class_size.shape:
-            raise ValueError("'mat' and 'class_size' must have the same shape, but currently the shape of 'mat' is {a} and the shape of 'class_size' is {b}.".format(a=mat.shape, b=class_size.shape));
+        if class_size.ndim == 1 and mat.ndim == 2:
+            if len(class_size) != mat.shape[0]:
+                raise ValueError("If 'class_size' is an 1-d array, it must have the same number of elements as the number of rows of 'mat'");
+        
+        elif mat.shape!=class_size.shape:
+            raise ValueError("When 'class_size' and 'mat' have the same dimensions, they must have the same shape. But currently the shape of 'mat' is {a} and the shape of 'class_size' is {b}.".format(a=mat.shape, b=class_size.shape));
         return gini_byClass(mat, class_size);
 
