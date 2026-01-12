@@ -211,8 +211,9 @@ def relatedness(mat:np.ndarray,
 
 
 def rescale(x:np.ndarray) ->np.ndarray:
-    eth = x.min()
-    btc = x.max()
+    
+    eth = x[np.isfinite(x)].min()
+    btc = x[np.isfinite(x)].max()
     if eth == btc:
         return x*0;
     else:
@@ -307,6 +308,8 @@ def pci_eig(mat_RCA: np.ndarray) -> np.ndarray:
     diversity = hasRCA.sum(0, keepdims = True);
     ubiquity = hasRCA.sum(1, keepdims = True);
     
+    # problem_div = (diversity<=0);
+    problem_ubi = (ubiquity<=0);
     diversity[diversity<=0] = 9988;
     ubiquity[ubiquity<=0] = 9992;
     
@@ -318,14 +321,16 @@ def pci_eig(mat_RCA: np.ndarray) -> np.ndarray:
     
     # Ensure sequence and get the second largest
     idx = np.argsort(eigenvalues)[::-1];
-    PCI = rescale(eigenvectors[:,idx[1]]);
+    PCI = eigenvectors[:,idx[1]];
+    PCI[problem_ubi[:,0]>0] = np.nan;
+    PCI = rescale(PCI.real);
     
     # Flipping signs to be consistent to the reflection outcome
-    PCIe = pci_reflex(mat_RCA, 25);
-    if np.corrcoef(PCI, PCIe)[0,1] < 0.0:
-        PCI = -PCI;
+    # PCIe = pci_reflex(mat_RCA, 25);
+    # if np.corrcoef(PCI, PCIe)[0,1] < 0.0:
+    #    PCI = -PCI;
     
-    return rescale(PCI);
+    return PCI;
 
 
 
@@ -456,5 +461,62 @@ def eci(mat: np.ndarray,
         ECI = "When there is a will, perhaps there is still no way."
     
     return ECI;
+
+
+def ci_calibrate(mat: np.ndarray, 
+                   ref: np.ndarray) -> np.ndarray: 
+    '''
+    Calibrate the order in PCI and ECI indices.
+    
+    Parameters
+    -----
+    mat: numpy 1d or 2d array, containing PCI and ECI index
+    
+    ref: numpy 1d or 2d array. 
+         "reference" of product and economic complexity with a known, desired order.
+         It can be, e.g. PRODY index as reference for PCI, and EXPY index for ECI.
+         If 'mat' is an 1-d array, 'ref' must be the same in shape.
+         If 'mat' is an 2-d array, 'ref' must be either an 1-d array with the 
+         same number of elements as the number of rows in 'mat', or having a same
+         shape as 'mat'. 
+    '''
+    flag = True;
+    if mat.ndim > 2:
+        raise ValueError("'mat' must be a numpy 1-d or 2-d array, but currently its dimension is {}.".format(mat.ndim));
+    if ref.ndim > 2:
+        raise ValueError("'ref' must be a numpy 1-d or 2-d array, but currently its dimension is {}.".format(ref.ndim));
+    if mat.ndim == 1:
+        if mat.shape != ref.shape:
+            raise ValueError("If 'mat' is a 1-d array, 'ref' must have exactly the same shape as 'mat'");
+        m = mat.reshape(-1, 1);
+    
+    if mat.ndim == 2:
+        if ref.ndim == 1:
+            if len(ref) != mat.shape[0]:
+                raise ValueError("If 'mat' is a 2-d array and 'ref' a 1-d array, the number of elements of 'ref' must be the same as the number of rows of 'mat'. But currently, 'mat' has {a} rows while 'ref' has {b} elements.".format(a = mat.shape[0], b = len(ref)));
+        else:
+            if ref.shape != mat.shape:
+                raise ValueError("If 'mat' and 'ref' are 2-d arrays, they must have a same shape. But now the shape of 'mat' is {a} and 'ref' is {b}.".format(a = mat.shape, b = ref.shape));
+            flag = False;
+        m = mat;
+    
+    data = [];
+    for i in range(m.shape[1]):
+        mm = m[:, i];
+        rr = ref if flag else ref[:, i];
+        useful = np.isfinite(rr) & np.isfinite(mm);
+        if np.sum(useful.astype(int))<2:
+            data.append(mm.copy());
+        else:
+            sign = np.corrcoef(mm[useful], rr[useful])[0,1] >= 0;
+            data.append(mm.copy() if sign else 100-mm.copy());
+    
+    if mat.ndim == 1:
+        data = data[0];
+    else:
+        data = np.asarray(data).T;
+    
+    return data;
+
 
 

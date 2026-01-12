@@ -61,9 +61,13 @@ def prody(mat: np.ndarray,
         mat = rca(mat);
     
     if weight is not None:
-        PRD = np.sum(mat * weight * val, 1) / np.sum(mat * weight, 1);
+        DEN = np.sum(mat * weight, 1);
+        DEN[DEN==0] = 12345;
+        PRD = np.sum(mat * weight * val, 1) / DEN;
     else: 
-        PRD = np.sum(mat * val, 1) / np.sum(mat, 1);
+        DEN = np.sum(mat, 1);
+        DEN[DEN==0] = 54321;
+        PRD = np.sum(mat * val, 1) / DEN;
     
     return PRD;
 
@@ -110,7 +114,9 @@ def expy(exp_mat: np.ndarray,
     else:
         PRD = prody(exp_mat, val);
     
-    reg_basket = exp_mat / np.sum(exp_mat, 0, keepdims = True);
-
+    DEN = np.sum(exp_mat, 0, keepdims = True);
+    DEN[DEN==0] = 9988;
+    reg_basket = exp_mat / DEN;
+    
     EXPY = np.sum( reg_basket * PRD.reshape(-1,1) , 0);
     return EXPY;
