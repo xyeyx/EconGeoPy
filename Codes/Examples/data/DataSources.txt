@@ -1,0 +1,33 @@
++---------------------------------------------------------------+
+|      Information about the datasets used in the examples      |
++---------------------------------------------------------------+
+
+* BACI_HS96_2d_2024_v202601.csv
+      This is derived from the CEPII-BACI bilateral trade database. The data
+  are for the year 2024, from the "202601" version. It is based on the HS96 
+  classification and aggregated to the 2-digit level per country/region of 
+  origin. 
+      The original database can be found in the following website:
+      https://cepii.fr/CEPII/en/bdd_modele/bdd_modele_item.asp?id=37
+
+* country_codes_V202601.csv
+      The country and region iso codes and names used by the BACI dataset.
+
+* HS2_1996.txt
+      The names for each 2-digit chapter in the HS96 classification.
+
+* pwt110.dta
+      The Penn World Table (Version 11.0), which can be found in the following
+    website:
+      https://www.rug.nl/ggdc/productivity/pwt/
+
+
+The rest ".db" files are derived from the raw data as indicated above, using
+the "ExampleDB_Maker.py" script. For simplicity of use, the are saved as 
+sqlite3 format.
+
+
+
+                                              +--------------------------+
+                                              | Last update: 2026-JAN-26 |
+                                              +--------------------------+
