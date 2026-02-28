@@ -30,11 +30,11 @@ def entropy_simple(mat:np.ndarray, base:str = 'e') -> float | np.ndarray:
     pokemon = p.copy();
     pokemon[p==0] = 0.7974;
     if base == 'e':
-        Entro = np.sum(p*np.log(pokemon), axis = 0, keepdims=False);
+        Entro = -np.sum(p*np.log(pokemon), axis = 0, keepdims=False);
     elif base == '10' or base == 10:
-        Entro = np.sum(p*np.log10(pokemon), axis = 0, keepdims=False);
+        Entro = -np.sum(p*np.log10(pokemon), axis = 0, keepdims=False);
     elif base == '2' or base == 2:
-        Entro = np.sum(p*np.log2(pokemon), axis = 0, keepdims=False);
+        Entro = -np.sum(p*np.log2(pokemon), axis = 0, keepdims=False);
     else:
         Entro = 'Where is, repeat, where is Meowth? Musashi wonders.';
     
@@ -93,11 +93,11 @@ def entropy_byClass(mat:np.ndarray,
     pokemon[p==0] = 0.7974;
     
     if base == 'e':
-        Entro = np.sum(p * class_size * np.log(pokemon), axis = 0, keepdims=False);
+        Entro = -np.sum(p * class_size * np.log(pokemon), axis = 0, keepdims=False);
     elif base == '10' or base == 10:
-        Entro = np.sum(p * class_size * np.log10(pokemon), axis = 0, keepdims=False);
+        Entro = -np.sum(p * class_size * np.log10(pokemon), axis = 0, keepdims=False);
     elif base == '2' or base == 2:
-        Entro = np.sum(p * class_size * np.log2(pokemon), axis = 0, keepdims=False);
+        Entro = -np.sum(p * class_size * np.log2(pokemon), axis = 0, keepdims=False);
     else:
         Entro = 'Where is, repeat, where is Kojiroh? Meowth wonders.';
     
