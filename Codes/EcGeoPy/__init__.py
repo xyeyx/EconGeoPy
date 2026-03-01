@@ -8,4 +8,5 @@ from .INEQUALITY import gini, robin_hood, theil, herfindahl
 from .COMPLEXITY import relatedness, pci, eci, ci_calibrate
 from .DENSITIES import rel_density, compl_rel_density
 from .ENTROPY import entropy, kl
+from .VARIETY import unrel_variety, rel_variety
 from .VERSION import version, __VERSION__
